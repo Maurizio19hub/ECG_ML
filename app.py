@@ -49,22 +49,33 @@ with tab1:
     st.pyplot(fig)
 
 
-x_train, labels, representatives = load_data("risultati_DTW.npz")
+x_train_man, labels_man, representatives_man = load_data("risultati_DTW_manhattan.npz")
+
+x_train_euc, labels_euc, representatives_euc = load_data("risultati_DTW_euclidean.npz")
 
 with tab2:
     st.header("DTW Distance Results")
-    st.metric(label="Silhouette Score Globale", value="0.196")
+    measure = st.selectbox("Select Cluster to analize:", options=["euclidean", "manhattan"])
+    if measure == "manhattan":
+        x_train_dtw, labels_dtw, representatives_dtw = x_train_man.copy(), labels_man.copy(), representatives_man.copy()
+        metric_dtw = "0.196"
+    else:
+        x_train_dtw, labels_dtw, representatives_dtw = x_train_euc.copy(), labels_euc.copy(), representatives_euc.copy()
+        metric_dtw = "0.252"
+    print()
+
+    st.metric(label="Silhouette Score Globale", value=metric_dtw)
 
     fig, axes = plt.subplots(K, 1, figsize=(10, 2.5 * K), sharex=True, sharey=True)
     for k in range(K):
-        cluster_signals = x_train[labels == k]
+        cluster_signals_dtw = x_train_dtw[labels_dtw == k]
         ax = axes[k]
         
-        for signal in cluster_signals[:max_curves]:
+        for signal in cluster_signals_dtw[:max_curves]:
             ax.plot(signal, color='darkgray', alpha=0.55, linewidth=0.5)
             
-        ax.plot(representatives[k], color='crimson', linewidth=2, label=f'Centroid {k}')
-        ax.set_title(f"Cluster {k} ({len(cluster_signals)} heartbeats)", fontsize=11, fontweight='bold', loc='left')
+        ax.plot(representatives_dtw[k], color='crimson', linewidth=2, label=f'Centroid {k}')
+        ax.set_title(f"Cluster {k} ({len(cluster_signals_dtw)} heartbeats)", fontsize=11, fontweight='bold', loc='left')
         if show_grid:
             ax.grid(True, linestyle='--', alpha=0.5, which='both')
         else:
@@ -75,24 +86,24 @@ with tab2:
     st.pyplot(fig)
     
     st.subheader("Dynamic Time Warping - Elastic Alignment Visualization")
-    target_cluster = st.selectbox("Select Cluster to analize:", options=range(K))
-    signals_cluster = x_train[labels == target_cluster]
-    target_example = st.selectbox("Select Signal to compare:", options=range(len(signals_cluster)))
-    if len(signals_cluster) > 0:
-        segnale_esempio = signals_cluster[target_example]
-        centroide_esempio = representatives[target_cluster]
+    target_cluster_dtw = st.selectbox("Select Cluster to analize:", options=range(K))
+    signals_cluster_dtw = x_train_dtw[labels_dtw == target_cluster_dtw]
+    target_example_dtw = st.selectbox("Select Signal to compare:", options=range(len(signals_cluster_dtw)))
+    if len(signals_cluster_dtw) > 0:
+        segnale_esempio_dtw = signals_cluster_dtw[target_example_dtw]
+        centroide_esempio_dtw = representatives_dtw[target_cluster_dtw]
 
-        _, path = fastdtw(centroide_esempio, segnale_esempio, dist=lambda x, y: abs(x - y))
+        _, path = fastdtw(centroide_esempio_dtw, segnale_esempio_dtw, dist=lambda x, y: abs(x - y))
 
         fig, ax = plt.subplots(figsize=(12, 6))
         
-        offset = np.max(centroide_esempio) - np.min(segnale_esempio) + 0.5
+        offset = np.max(centroide_esempio_dtw) - np.min(segnale_esempio_dtw) + 0.5
         
-        ax.plot(centroide_esempio + offset, color='crimson', linewidth=2, label='Centroid DBA (upper shifted)')
-        ax.plot(segnale_esempio, color='royalblue', linewidth=2, label='Real ECG Signal from Cluster')
+        ax.plot(centroide_esempio_dtw + offset, color='crimson', linewidth=2, label='Centroid DBA (upper shifted)')
+        ax.plot(segnale_esempio_dtw, color='royalblue', linewidth=2, label='Real ECG Signal from Cluster')
 
         for t_bary, t_sig in path[::4]:
-            ax.plot([t_bary, t_sig], [centroide_esempio[t_bary] + offset, segnale_esempio[t_sig]], 
+            ax.plot([t_bary, t_sig], [centroide_esempio_dtw[t_bary] + offset, segnale_esempio_dtw[t_sig]], 
                     color='black', linestyle='--', alpha=0.3, linewidth=0.8)
 
         ax.set_title("Elastic Alignment Display (Dynamic Time Warping)", fontsize=14, fontweight='bold')
@@ -103,5 +114,5 @@ with tab2:
         st.pyplot(fig)
         
     else:
-        st.warning(f"The cluster {target_cluster} is empty.")
+        st.warning(f"The cluster {target_cluster_dtw} is empty.")
             
