@@ -55,13 +55,10 @@ x_train_euc, labels_euc, representatives_euc = load_data("risultati_DTW_euclidea
 
 with tab2:
     st.header("DTW Distance Results")
-    measure = st.selectbox("Select Cluster to analize:", options=["euclidean", "manhattan"])
-    if measure == "manhattan":
-        x_train_dtw, labels_dtw, representatives_dtw = x_train_man.copy(), labels_man.copy(), representatives_man.copy()
-        metric_dtw = "0.196"
-    else:
-        x_train_dtw, labels_dtw, representatives_dtw = x_train_euc.copy(), labels_euc.copy(), representatives_euc.copy()
-        metric_dtw = "0.252"
+    measure = st.selectbox("Select Cluster to analyze:", options=["euclidean", "manhattan"])
+    metrics = {"manhattan": "0.196", "euclidean": "0.252"}
+    x_train_dtw, labels_dtw, representatives_dtw = (x_train_man.copy(), labels_man.copy(), representatives_man.copy()) if measure == "manhattan" else (x_train_euc.copy(), labels_euc.copy(), representatives_euc.copy())
+    metric_dtw = metrics[measure]
     print()
 
     st.metric(label="Silhouette Score Globale", value=metric_dtw)
