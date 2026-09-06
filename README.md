@@ -1,68 +1,69 @@
-# Clustering ECG Data
+# ECG Clustering Analysis
 
-## Descrizione del Progetto
+[![Python](https://img.shields.io/badge/Python-3.10-blue.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Questo progetto si concentra sull'analisi di serie temporali di dati ECG (elettrocardiogramma) per identificare possibili cluster che distinguono le patologie dei pazienti. Utilizzando diversi algoritmi di clustering, come K-Means, DTW (Dynamic Time Warping) e Kernel K-Means, il progetto mira a migliorare la precisione nell'identificazione dei cluster.
+Unsupervised clustering of ECG heartbeat time series using K-means, Dynamic Time Warping (DTW) with DBA, and Kernel K-means (GAK). The project aims to distinguish different cardiac pathologies from the ECG5000 dataset.
 
-## Dipendenze
+## Table of Contents
+- [Overview](#overview)
+- [Dataset](#dataset)
+- [Methods](#methods)
+- [Evaluation](#evaluation)
+- [Results](#results)
+- [Repository Structure](#repository-structure)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Key Skills Demonstrated](#key-skills-demonstrated)
+- [Contact](#contact)
 
-Le seguenti librerie Python sono necessarie per eseguire il progetto:
+## Overview
+This repository contains a Jupyter notebook (`heartbeat.ipynb`) that performs clustering analysis on the ECG5000 time series dataset. The goal is to group heartbeat signals into clusters that correspond to different cardiac conditions (e.g., normal vs. abnormal) without using the provided labels during training. The analysis compares three clustering approaches:
 
-- `matplotlib`: per la creazione di grafici
-- `numpy`: per la manipolazione di vettori
-- `pandas`: per la gestione dei dataframes
-- `sktime.datasets`: per il caricamento dei dataset dai file .ts
-- `sklearn.metrics`: per valutare l'accuratezza dei risultati
-- `scipy.optimize`: per l'algoritmo ungherese
-- `sklearn.decomposition`: per la riduzione dimensionale con PCA
-- `sklearn.manifold`: per la riduzione dimensionale con TSNE
-- `fastdtw`: per calcolare la distanza tra serie temporali
-- `tslearn.clustering`: per l'algoritmo KernelKMeans
-- `seaborn`: per la personalizzazione grafica dei grafici Matplotlib
+1. **K-means** with Euclidean distance and the elbow method for selecting the number of clusters.
+2. **DTW-based clustering** using Dynamic Time Warping distance and DBA (DTW Barycenter Averaging) for centroid updates.
+3. **Kernel K-means** with the Global Alignment Kernel (GAK) implemented via `tslearn`.
 
-## Istruzioni per l'Esecuzione
+The notebook includes comprehensive evaluation using internal metrics (Silhouette, Calinski-Harabasz), external metrics (Adjusted Rand Index on a held-out test set), confusion matrix analysis with Hungarian algorithm mapping, intra/inter cluster distance boxplots, and dimensionality reduction visualizations (PCA and t-SNE).
 
-1. Clonare il repository:
-   ```bash
-   git clone <URL del repository>
-   ```
+## Dataset
+The **ECG5000** dataset is a subset of the UCR Time Series Archive. It contains 5,000 heartbeat recordings (140 time steps each) split into a training set (`ECG5000_TRAIN.ts`) and a test set (`ECG5000_TEST.ts`). Each recording is labeled with one of five classes representing different pathologies, but for clustering we treat the labels as ground truth only for evaluation.
 
-2. Installare le dipendenze:
-   ```bash
-   pip install -r requirements.txt
-   ```
+## Methods
+### 1. K-means (Euclidean)
+- Centroids are initialized randomly (with a fixed seed for reproducibility).
+- The elbow method is used to determine the optimal number of clusters (K=2).
+- Assignment step: each time series is assigned to the nearest centroid based on Euclidean distance.
+- Update step: centroids are recomputed as the arithmetic mean of the assigned series.
 
-3. Eseguire il notebook Jupyter `heartbeat.ipynb` per visualizzare i risultati del clustering.
+### 2. DTW + DBA
+- Distance between time series is computed using **fastdtw** (an efficient approximation of DTW).
+- Centroids are updated using **DTW Barycenter Averaging (DBA)**, which aligns each series to the current centroid via the DTW path and averages the aligned points.
+- This approach captures temporal misalignments that Euclidean distance cannot handle.
 
-## Dettagli del Progetto
+### 3. Kernel K-means (GAK)
+- Uses the **Global Alignment Kernel** (GAK) to measure similarity between time series in a high-dimensional feature space.
+- Implemented with `tslearn.clustering.KernelKMeans`.
+- The kernel bandwidth (`sigma`) is set to 5.0, and the algorithm runs for 20 iterations.
 
-### 1. Importazione delle Librerie
+## Evaluation
+The clustering quality is assessed through multiple complementary metrics:
 
-Il progetto utilizza diverse librerie Python per l'analisi dei dati e il clustering. Le librerie principali includono `matplotlib` per la visualizzazione, `numpy` per la manipolazione dei dati, `pandas` per la gestione dei dataframes, e `sktime.datasets` per il caricamento dei dataset.
+- **Internal metrics**: Silhouette score (computed with DTW distance matrix for the DTW method) and Calinski-Harabasz index.
+- **External metric**: Adjusted Rand Index (ARI) on the test set, comparing predicted cluster assignments to true labels.
+- **Hungarian algorithm**: Automatically maps each cluster to the most likely true class by maximizing the diagonal of the confusion matrix. This mapping is used to compute per-class precision, recall, and F1-score.
+- **Intra/inter cluster distances**: Boxplots comparing distances within the same cluster vs. between different clusters.
+- **Visualization**: PCA and t-SNE projections of the training data, colored by cluster assignment, to inspect the separation in 2D.
 
-### 2. Caricamento dei Dataset
+## Results
+The notebook outputs the following key findings (exact numbers depend on the run, but the trends are consistent):
 
-I dataset utilizzati nel progetto sono `ECG5000_TRAIN.ts` e `ECG5000_TEST.ts`. Questi contengono serie temporali di dati ECG, con ogni riga che rappresenta l'evoluzione temporale dei battiti cardiaci. I dataset includono anche etichette per la classificazione.
+- The elbow method suggests **K = 2** clusters, which aligns with the binary nature of the dataset (normal vs. abnormal).
+- **DTW + DBA** significantly improves cluster purity compared to Euclidean K-means, as it accounts for temporal warping.
+- **Kernel K-means (GAK)** achieves the highest ARI on the test set, indicating the best alignment with true pathology labels.
+- The Hungarian mapping reveals that one cluster predominantly contains normal heartbeats, while the other captures various abnormal morphologies.
+- PCA and t-SNE plots show clearer separation for the DTW and Kernel methods.
 
-### 3. Implementazione degli Algoritmi di Clustering
+All results are saved in `.npz` files (`risultati_kmeans.npz`, `risultati_DTW_euclidean.npz`) for further analysis.
 
-#### K-Means
-L'algoritmo K-Means è stato utilizzato per identificare i cluster iniziali nei dati ECG. È stato implementato un metodo per determinare il numero ottimale di cluster utilizzando il metodo del gomito.
-
-#### Dynamic Time Warping (DTW)
-Il DTW è stato utilizzato per migliorare l'identificazione dei cluster, tenendo conto delle variazioni temporali nei segnali ECG. L'algoritmo DTW Barycenter Averaging (DBA) è stato implementato per calcolare i centroidi dinamici.
-
-#### Kernel K-Means
-Il Kernel K-Means è stato utilizzato per migliorare ulteriormente i risultati del clustering. Questo metodo applica un kernel per trasformare i dati in uno spazio di dimensioni superiori, migliorando la separazione dei cluster.
-
-### 4. Valutazione dei Risultati
-
-I risultati del progetto includono la visualizzazione dei cluster identificati tramite grafici, l'analisi delle distanze intra e inter-cluster, e la valutazione della qualità del clustering tramite metriche come il Silhouette Score e l'Adjusted Rand Index (ARI). Sono state utilizzate tecniche di riduzione dimensionale come PCA e t-SNE per visualizzare i dati in due dimensioni.
-
-### 5. Conclusioni
-
-Il progetto ha dimostrato che l'utilizzo di metodi avanzati di clustering, come DTW e Kernel K-Means, può migliorare significativamente la precisione nell'identificazione dei cluster nei dati ECG. Questi metodi permettono di catturare meglio le variazioni temporali e le caratteristiche non lineari dei segnali ECG.
-
-## Autore
-
-Questo progetto è stato sviluppato come parte di una selezione per una borsa di studio. Per ulteriori informazioni, contattare l'autore.
+## Repository Structure
