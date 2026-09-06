@@ -34,9 +34,28 @@ Le seguenti librerie Python sono necessarie per eseguire il progetto:
 
 3. Eseguire il notebook Jupyter `heartbeat.ipynb` per visualizzare i risultati del clustering.
 
-## Risultati Attesi
+## Metodologia
 
-Il progetto utilizza diversi metodi di clustering per analizzare i dati ECG. I risultati includono la visualizzazione dei cluster identificati, l'analisi delle distanze intra e inter-cluster, e la valutazione della qualità del clustering tramite metriche come il Silhouette Score e l'Adjusted Rand Index (ARI).
+Il progetto utilizza diversi metodi di clustering per analizzare i dati ECG:
+
+1. **K-Means**: Utilizzato per identificare i cluster iniziali nei dati ECG. L'algoritmo è stato implementato con un metodo per determinare il numero ottimale di cluster utilizzando il metodo del gomito.
+
+2. **Dynamic Time Warping (DTW)**: Questo metodo è stato utilizzato per migliorare l'identificazione dei cluster, tenendo conto delle variazioni temporali nei segnali ECG. L'algoritmo DTW Barycenter Averaging (DBA) è stato implementato per calcolare i centroidi dinamici.
+
+3. **Kernel K-Means**: Utilizzato per migliorare ulteriormente i risultati del clustering. Questo metodo applica un kernel per trasformare i dati in uno spazio di dimensioni superiori, migliorando la separazione dei cluster.
+
+## Risultati
+
+I risultati del progetto includono:
+
+- Visualizzazione dei cluster identificati tramite grafici.
+- Analisi delle distanze intra e inter-cluster.
+- Valutazione della qualità del clustering tramite metriche come il Silhouette Score e l'Adjusted Rand Index (ARI).
+- Utilizzo di tecniche di riduzione dimensionale come PCA e t-SNE per visualizzare i dati in due dimensioni.
+
+## Conclusioni
+
+Il progetto ha dimostrato che l'utilizzo di metodi avanzati di clustering, come DTW e Kernel K-Means, può migliorare significativamente la precisione nell'identificazione dei cluster nei dati ECG. Questi metodi permettono di catturare meglio le variazioni temporali e le caratteristiche non lineari dei segnali ECG.
 
 ## Autore
 
