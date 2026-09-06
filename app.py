@@ -14,7 +14,13 @@ def load_data(file_name):
     data = np.load(file_name)
     return data["x_train"], data["labels"], data["representatives"]
 
-x_train, labels, representatives = load_data("risultati_kmeans.npz")
+def load_all_data():
+    x_train_kmeans, labels_kmeans, representatives_kmeans = load_data("risultati_kmeans.npz")
+    x_train_man, labels_man, representatives_man = load_data("risultati_DTW_manhattan.npz")
+    x_train_euc, labels_euc, representatives_euc = load_data("risultati_DTW_euclidean.npz")
+    return (x_train_kmeans, labels_kmeans, representatives_kmeans), (x_train_man, labels_man, representatives_man), (x_train_euc, labels_euc, representatives_euc)
+
+(x_train, labels, representatives), (x_train_man, labels_man, representatives_man), (x_train_euc, labels_euc, representatives_euc) = load_all_data()
 K = len(representatives)
 
 
@@ -47,11 +53,6 @@ with tab1:
         
     plt.tight_layout()
     st.pyplot(fig)
-
-
-x_train_man, labels_man, representatives_man = load_data("risultati_DTW_manhattan.npz")
-
-x_train_euc, labels_euc, representatives_euc = load_data("risultati_DTW_euclidean.npz")
 
 with tab2:
     st.header("DTW Distance Results")
