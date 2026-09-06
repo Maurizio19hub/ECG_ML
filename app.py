@@ -4,10 +4,19 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import silhouette_score, calinski_harabasz_score
 from fastdtw import fastdtw
 
-st.set_page_config(page_title="ECG Clustering Dashboard", layout="wide")
+st.set_page_config(page_title="ECG Clustering Dashboard", layout="wide", page_icon="🫀")
 
-st.title("🫀 Clustering Dashboard for ECG signals.")
-st.markdown("Morphological analysis of heartbeats using clustering algorithms.")
+st.title("🫀 ECG Clustering Dashboard")
+st.markdown("""
+    <style>
+    .main { background-color: #f0f2f6; }
+    </style>
+    """, unsafe_allow_html=True)
+
+st.markdown("""
+    ## Morphological Analysis of Heartbeats
+    This dashboard allows you to explore clustering results on ECG signals using various algorithms.
+    """)
 
 @st.cache_data # Evita di ricaricare il file a ogni click dell'utente
 def load_data(file_name):
@@ -24,7 +33,7 @@ def load_all_data():
 K = len(representatives)
 
 
-st.sidebar.header("Visualizzation Settings")
+st.sidebar.header("Visualization Settings")
 max_curves = st.sidebar.slider("Maximum number of background curves", 10, 200, 50)
 show_grid = st.sidebar.checkbox("Show Grid", value=True)
 
@@ -32,7 +41,7 @@ show_grid = st.sidebar.checkbox("Show Grid", value=True)
 tab1, tab2 = st.tabs(["Euclidean K-Means", "K-Means DTW (soon)"])
 
 with tab1:
-    st.header("Euclidean Distance Results")
+    st.header("Euclidean Distance Clustering Results")
     st.metric(label="Silhouette Score Globale", value=silhouette_score(x_train, labels))
     
     fig, axes = plt.subplots(K, 1, figsize=(10, 2.5 * K), sharex=True, sharey=True)
@@ -55,7 +64,7 @@ with tab1:
     st.pyplot(fig)
 
 with tab2:
-    st.header("DTW Distance Results")
+    st.header("Dynamic Time Warping (DTW) Clustering Results")
     measure = st.selectbox("Select Cluster to analyze:", options=["euclidean", "manhattan"])
     metrics = {"manhattan": "0.196", "euclidean": "0.252"}
     x_train_dtw, labels_dtw, representatives_dtw = (x_train_man.copy(), labels_man.copy(), representatives_man.copy()) if measure == "manhattan" else (x_train_euc.copy(), labels_euc.copy(), representatives_euc.copy())
